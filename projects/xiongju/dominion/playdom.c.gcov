@@ -1,0 +1,250 @@
+        -:    0:Source:playdom.c
+        -:    0:Graph:playdom.gcno
+        -:    0:Data:playdom.gcda
+        -:    0:Runs:5
+        -:    0:Programs:1
+        -:    1:#include "dominion.h"
+        -:    2:#include <stdio.h>
+        -:    3:#include "rngs.h"
+        -:    4:#include <stdlib.h>
+        -:    5:
+function main called 5 returned 100% blocks executed 98%
+        5:    6:int main (int argc, char** argv) {
+        -:    7:  struct gameState G;
+        5:    8:  int k[10] = {adventurer, gardens, embargo, village, minion, mine, cutpurse,
+        -:    9:           sea_hag, tribute, smithy};
+        -:   10:
+        5:   11:  printf ("Starting game.\n");
+call    0 returned 100%
+        -:   12:
+        5:   13:  initializeGame(2, k, atoi(argv[1]), &G);
+call    0 returned 100%
+call    1 returned 100%
+        -:   14:
+        5:   15:  int money = 0;
+        5:   16:  int smithyPos = -1;
+        5:   17:  int adventurerPos = -1;
+        5:   18:  int i=0;
+        -:   19:
+        5:   20:  int numSmithies = 0;
+        5:   21:  int numAdventurers = 0;
+        -:   22:
+      203:   23:  while (!isGameOver(&G)) {
+call    0 returned 100%
+branch  1 taken 97%
+branch  2 taken 3% (fallthrough)
+      193:   24:    money = 0;
+      193:   25:    smithyPos = -1;
+      193:   26:    adventurerPos = -1;
+     1158:   27:    for (i = 0; i < numHandCards(&G); i++) {
+call    0 returned 100%
+branch  1 taken 83%
+branch  2 taken 17% (fallthrough)
+      965:   28:      if (handCard(i, &G) == copper)
+call    0 returned 100%
+branch  1 taken 41% (fallthrough)
+branch  2 taken 59%
+      395:   29:    money++;
+      570:   30:      else if (handCard(i, &G) == silver)
+call    0 returned 100%
+branch  1 taken 44% (fallthrough)
+branch  2 taken 56%
+      249:   31:    money += 2;
+      321:   32:      else if (handCard(i, &G) == gold)
+call    0 returned 100%
+branch  1 taken 14% (fallthrough)
+branch  2 taken 86%
+       44:   33:    money += 3;
+      277:   34:      else if (handCard(i, &G) == smithy)
+call    0 returned 100%
+branch  1 taken 4% (fallthrough)
+branch  2 taken 96%
+       10:   35:    smithyPos = i;
+      267:   36:      else if (handCard(i, &G) == adventurer)
+call    0 returned 100%
+branch  1 taken 4% (fallthrough)
+branch  2 taken 96%
+       10:   37:    adventurerPos = i;
+        -:   38:    }
+        -:   39:
+      193:   40:    if (whoseTurn(&G) == 0) {
+call    0 returned 100%
+branch  1 taken 51% (fallthrough)
+branch  2 taken 49%
+       99:   41:      if (smithyPos != -1) {
+branch  0 taken 10% (fallthrough)
+branch  1 taken 90%
+       10:   42:        printf("0: smithy played from position %d\n", smithyPos);
+call    0 returned 100%
+       10:   43:        playCard(smithyPos, -1, -1, -1, &G);
+call    0 returned 100%
+       10:   44:        printf("smithy played.\n");
+call    0 returned 100%
+       10:   45:        money = 0;
+       10:   46:        i=0;
+       80:   47:        while(i<numHandCards(&G)){
+call    0 returned 100%
+branch  1 taken 86%
+branch  2 taken 14% (fallthrough)
+       60:   48:          if (handCard(i, &G) == copper){
+call    0 returned 100%
+branch  1 taken 55% (fallthrough)
+branch  2 taken 45%
+       33:   49:            playCard(i, -1, -1, -1, &G);
+call    0 returned 100%
+       33:   50:            money++;
+        -:   51:          }
+       27:   52:          else if (handCard(i, &G) == silver){
+call    0 returned 100%
+branch  1 taken 26% (fallthrough)
+branch  2 taken 74%
+        7:   53:            playCard(i, -1, -1, -1, &G);
+call    0 returned 100%
+        7:   54:            money += 2;
+        -:   55:          }
+       20:   56:          else if (handCard(i, &G) == gold){
+call    0 returned 100%
+branch  1 taken 0% (fallthrough)
+branch  2 taken 100%
+    #####:   57:            playCard(i, -1, -1, -1, &G);
+call    0 never executed
+    #####:   58:            money += 3;
+        -:   59:          }
+       60:   60:          i++;
+        -:   61:        }
+        -:   62:      }
+        -:   63:
+       99:   64:      if (money >= 8) {
+branch  0 taken 22% (fallthrough)
+branch  1 taken 78%
+       22:   65:        printf("0: bought province\n");
+call    0 returned 100%
+       22:   66:        buyCard(province, &G);
+call    0 returned 100%
+        -:   67:      }
+       77:   68:      else if (money >= 6) {
+branch  0 taken 27% (fallthrough)
+branch  1 taken 73%
+       21:   69:        printf("0: bought gold\n");
+call    0 returned 100%
+       21:   70:        buyCard(gold, &G);
+call    0 returned 100%
+        -:   71:      }
+       56:   72:      else if ((money >= 4) && (numSmithies < 2)) {
+branch  0 taken 68% (fallthrough)
+branch  1 taken 32%
+branch  2 taken 26% (fallthrough)
+branch  3 taken 74%
+       10:   73:        printf("0: bought smithy\n");
+call    0 returned 100%
+       10:   74:        buyCard(smithy, &G);
+call    0 returned 100%
+       10:   75:        numSmithies++;
+        -:   76:      }
+       46:   77:      else if (money >= 3) {
+branch  0 taken 96% (fallthrough)
+branch  1 taken 4%
+       44:   78:        printf("0: bought silver\n");
+call    0 returned 100%
+       44:   79:        buyCard(silver, &G);
+call    0 returned 100%
+        -:   80:      }
+        -:   81:
+       99:   82:      printf("0: end turn\n");
+call    0 returned 100%
+       99:   83:      endTurn(&G);
+call    0 returned 100%
+        -:   84:    }
+        -:   85:    else {
+       94:   86:      if (adventurerPos != -1) {
+branch  0 taken 11% (fallthrough)
+branch  1 taken 89%
+       10:   87:        printf("1: adventurer played from position %d\n", adventurerPos);
+call    0 returned 100%
+       10:   88:        playCard(adventurerPos, -1, -1, -1, &G);
+call    0 returned 100%
+       10:   89:        money = 0;
+       10:   90:        i=0;
+      110:   91:        while(i<numHandCards(&G)){
+call    0 returned 100%
+branch  1 taken 90%
+branch  2 taken 10% (fallthrough)
+       90:   92:          if (handCard(i, &G) == copper){
+call    0 returned 100%
+branch  1 taken 41% (fallthrough)
+branch  2 taken 59%
+       37:   93:            playCard(i, -1, -1, -1, &G);
+call    0 returned 100%
+       37:   94:            money++;
+        -:   95:          }
+       53:   96:          else if (handCard(i, &G) == silver){
+call    0 returned 100%
+branch  1 taken 62% (fallthrough)
+branch  2 taken 38%
+       33:   97:            playCard(i, -1, -1, -1, &G);
+call    0 returned 100%
+       33:   98:            money += 2;
+        -:   99:          }
+       20:  100:          else if (handCard(i, &G) == gold){
+call    0 returned 100%
+branch  1 taken 25% (fallthrough)
+branch  2 taken 75%
+        5:  101:            playCard(i, -1, -1, -1, &G);
+call    0 returned 100%
+        5:  102:            money += 3;
+        -:  103:          }
+       90:  104:          i++;
+        -:  105:        }
+        -:  106:      }
+        -:  107:
+       94:  108:      if (money >= 8) {
+branch  0 taken 19% (fallthrough)
+branch  1 taken 81%
+       18:  109:        printf("1: bought province\n");
+call    0 returned 100%
+       18:  110:        buyCard(province, &G);
+call    0 returned 100%
+        -:  111:      }
+       76:  112:      else if ((money >= 6) && (numAdventurers < 2)) {
+branch  0 taken 38% (fallthrough)
+branch  1 taken 62%
+branch  2 taken 34% (fallthrough)
+branch  3 taken 66%
+       10:  113:        printf("1: bought adventurer\n");
+call    0 returned 100%
+       10:  114:        buyCard(adventurer, &G);
+call    0 returned 100%
+       10:  115:        numAdventurers++;
+       66:  116:      }else if (money >= 6){
+branch  0 taken 29% (fallthrough)
+branch  1 taken 71%
+       19:  117:        printf("1: bought gold\n");
+call    0 returned 100%
+       19:  118:	    buyCard(gold, &G);
+call    0 returned 100%
+        -:  119:        }
+       47:  120:      else if (money >= 3){
+branch  0 taken 96% (fallthrough)
+branch  1 taken 4%
+       45:  121:        printf("1: bought silver\n");
+call    0 returned 100%
+       45:  122:	    buyCard(silver, &G);
+call    0 returned 100%
+        -:  123:      }
+       94:  124:      printf("1: endTurn\n");
+call    0 returned 100%
+        -:  125:
+       94:  126:      endTurn(&G);
+call    0 returned 100%
+        -:  127:    }
+        -:  128:  } // end of While
+        -:  129:
+        5:  130:  printf ("Finished game.\n");
+call    0 returned 100%
+        5:  131:  printf ("Player 0: %d\nPlayer 1: %d\n", scoreFor(0, &G), scoreFor(1, &G));
+call    0 returned 100%
+call    1 returned 100%
+call    2 returned 100%
+        -:  132:
+        5:  133:  return 0;
+        -:  134:}
