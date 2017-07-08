@@ -15,4 +15,5 @@ int smithyRef(int i,int currentPlayer,struct gameState *state,int handPos);
 int adventurerRef(int drawntreasure,struct gameState *state,int currentPlayer,int cardDrawn,int temphand[MAX_HAND],int z);
 int villageRef(int currentPlayer,struct gameState *state,int handPos);
 int mineRef(struct gameState *state,int currentPlayer,int choice1,int choice2,int j,int i,int handPos);
+int embargoRef(struct gameState *state,int choice1,int handPos,int currentPlayer);
 #endif

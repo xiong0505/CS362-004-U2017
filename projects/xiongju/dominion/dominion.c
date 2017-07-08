@@ -1075,22 +1075,9 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       return 0;
 
 		
-    case embargo: 
-      //+2 Coins
-      state->coins = state->coins + 2;
-			
-      //see if selected pile is in play
-      if ( state->supplyCount[choice1] == -1 )
-	{
-	  return -1;
-	}
-			
-      //add embargo token to selected supply pile
-      state->embargoTokens[choice1]++;
-			
-      //trash card
-      discardCard(handPos, currentPlayer, state, 1);		
-      return 0;
+    case embargo:
+      embargoRef(state,choice1,handPos,currentPlayer);
+
 		
     case outpost:
       //set outpost flag
@@ -1350,6 +1337,25 @@ if (state->hand[currentPlayer][i] == j)
 }
 
 return 0;
+}
+
+//embargoRef()
+int embargoRef(struct gameState *state,int choice1,int handPos,int currentPlayer){
+  //+2 Coins
+  state->coins = state->coins + 2;
+
+  //see if selected pile is in play
+  if ( state->supplyCount[choice1] == -1 )
+{
+  return -1;
+}
+
+  //add embargo token to selected supply pile
+  state->embargoTokens[choice1]++;
+
+  //trash card
+  discardCard(handPos, currentPlayer, state, 1);
+  return 0;
 }
 
 //end of dominion.c
