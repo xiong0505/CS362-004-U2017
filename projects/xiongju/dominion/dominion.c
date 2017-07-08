@@ -816,16 +816,8 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
 
 		
     case village:
-      //+1 Card
-      drawCard(currentPlayer, state);
-			
-      //+2 Actions
-      state->numActions = state->numActions + 2;
-			
-      //discard played card from hand
-      discardCard(handPos, currentPlayer, state, 0);
-      return 0;
-		
+      villageRef(currentPlayer,state,handPos);
+
     case baron:
       state->numBuys++;//Increase buys by 1!
       if (choice1 > 0){//Boolean true or going to discard an estate
@@ -1338,6 +1330,20 @@ state->discard[currentPlayer][state->discardCount[currentPlayer]++]=temphand[z-1
 z=z-1;
 }
 return 0;
+}
+
+//villageRef()
+int villageRef(int currentPlayer,struct gameState *state,int handPos)
+{
+    //+1 Card
+    drawCard(currentPlayer, state);
+
+    //+2 Actions
+    state->numActions = state->numActions + 2;
+
+    //discard played card from hand
+    discardCard(handPos, currentPlayer, state, 0);
+    return 0;
 }
 
 //end of dominion.c
