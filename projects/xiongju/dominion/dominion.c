@@ -1255,8 +1255,8 @@ int updateCoins(int player, struct gameState *state, int bonus)
 //smithyRef()
 int smithyRef(int i,int currentPlayer,struct gameState *state,int handPos){
   //+3 Cards
-  //for (i = 0; i < 3; i++)
   //bug: +2 Cards
+  //for (i = 0; i < 3; i++)
   for(i=0;i<2;i++)
 {
   drawCard(currentPlayer, state);
@@ -1269,7 +1269,9 @@ int smithyRef(int i,int currentPlayer,struct gameState *state,int handPos){
 
 //adventurerRef()
 int adventurerRef(int drawntreasure,struct gameState *state,int currentPlayer,int cardDrawn,int temphand[MAX_HAND],int z){
-  while(drawntreasure<2){
+ //while(drawntreasure<2){
+ //bug: reveal cards from deck until reveal 1 treasure card
+  while(drawntreasure<1){
 if (state->deckCount[currentPlayer] <1){//if the deck is empty we need to shuffle discard and add to deck
 shuffle(currentPlayer, state);
 }
@@ -1297,7 +1299,9 @@ int villageRef(int currentPlayer,struct gameState *state,int handPos)
     drawCard(currentPlayer, state);
 
     //+2 Actions
-    state->numActions = state->numActions + 2;
+    //bug: +1 Actions
+    //state->numActions = state->numActions + 2;
+    state->numActions = state->numActions + 1;
 
     //discard played card from hand
     discardCard(handPos, currentPlayer, state, 0);
@@ -1344,7 +1348,9 @@ return 0;
 //embargoRef()
 int embargoRef(struct gameState *state,int choice1,int handPos,int currentPlayer){
   //+2 Coins
-  state->coins = state->coins + 2;
+  //bug: +0 Coins
+  //state->coins = state->coins + 2;
+  state->coins = state->coins + 0;
 
   //see if selected pile is in play
   if ( state->supplyCount[choice1] == -1 )
