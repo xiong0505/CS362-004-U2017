@@ -1381,7 +1381,7 @@ return 0;
 //embargoRef()
 int embargoRef(struct gameState *state,int choice1,int handPos,int currentPlayer){
   //+2 Coins
-  //bug: +0 Coins
+  //bug: +1 Coins
   //state->coins = state->coins + 2;
   state->coins = state->coins + 1;
 
