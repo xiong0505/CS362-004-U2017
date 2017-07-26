@@ -797,7 +797,7 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
 		
     case smithy:
     {
-      smithyRef(i,currentPlayer,state,handPos);
+      smithyRef(currentPlayer,state,handPos);
       break;
     }
 
@@ -1279,17 +1279,17 @@ int updateCoins(int player, struct gameState *state, int bonus)
 }
 
 //smithyRef()
-int smithyRef(int i,int currentPlayer,struct gameState *state,int handPos){
+int smithyRef(int currentPlayer,struct gameState *state,int handPos){
   //+3 Cards
-  //bug: +2 Cards
-  //for (i = 0; i < 3; i++)
-  for(i=0;i<2;i++)
+  int i;
+  for(i=0;i<3;i++)
 {
   drawCard(currentPlayer, state);
 }
 
   //discard card from hand
-  discardCard(handPos, currentPlayer, state, 0);
+  //bug do not discard card from hand
+  //discardCard(handPos, currentPlayer, state, 0);
   return 0;
 }
 
@@ -1337,7 +1337,7 @@ int villageRef(int currentPlayer,struct gameState *state,int handPos)
     state->numActions = state->numActions + 1;
 
     //discard played card from hand
-    discardCard(handPos, currentPlayer, state, 0);
+    //discardCard(handPos, currentPlayer, state, 0);
     return 0;
 }
 
@@ -1381,7 +1381,7 @@ return 0;
 //embargoRef()
 int embargoRef(struct gameState *state,int choice1,int handPos,int currentPlayer){
   //+2 Coins
-  //bug: +0 Coins
+  //bug: +1 Coins
   //state->coins = state->coins + 2;
   state->coins = state->coins + 1;
 
