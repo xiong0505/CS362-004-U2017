@@ -6,77 +6,87 @@
  *      gcc -o randomtestcard2 -g  randomtestcard2.c dominion.o rngs.o $(CFLAGS)
  * -----------------------------------------------------------------------
  */
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <assert.h>
 #include "dominion.h"
 #include "dominion_helpers.h"
-#include <string.h>
-#include <stdio.h>
-#include <assert.h>
 #include "rngs.h"
-#include <time.h>
-#include <stdlib.h>
 
- int main(){
-	int i, n, r, p, deckCount, discardCount, handCount;
-    int k[10] = {adventurer, council_room, feast, gardens, mine, remodel, smithy, village, baron, great_hall};
-	struct gameState G;
-	printf("Testing village.\n");
+#define NUMTEST 10000
+#define SEED 100
+#define NUMPLAYERS 2
 
-	SelectStream(2);
-	PutSeed(3);
+int main (){
+   struct gameState g;
+   int testingPass = 0;
+   int allPassFlag = 0;
+   int currentPlayer = 0;
+   int deckSize, handSize, previousHand, afterHand, previousAction, afterAction;
+   int errorInHand = 0;
+   int errorInAction = 0;
+   int i = 0;
+   int choice1 = 0, choice2 = 0, choice3 = 0, handPos = 0, bonus = 0;
+   int cards[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
+   srand(time(NULL));
 
-	for(n=0;n<200000;n++){
-		printf("round: %d\n",n);
-		for(i=0;i<sizeof(struct gameState);i++){
-			((char*)&G)[i]=floor(Random()*256);
-		}
-		p=floor(Random()*2);
-		G.deckCount[p]=floor(Random()*MAX_DECK);
-		G.discardCount[p]=floor(Random()*MAX_DECK);
-		G.handCount[p]=floor(Random()*MAX_HAND)+1;     //at least have one card on hand to play
-		checkVillageCard(p,&G);
-	}
+   printf("Testing Village\n");
 
-	printf("ALL TESTS OK\n");
-	exit(0);
- }
+   for (i = 0; i < NUMTEST; i++) {
 
- int checkVillageCard(int p,struct gameState *post){
- 	int r;
- 	int drawNum=1;
- 	int actionNum=2;
- 	struct gameState pre;
- 	memcpy(&pre,post,sizeof(struct gameState));
+			//randomly intialize the game state. then make sure the needed variables are sane.
+			initializeGame(NUMPLAYERS, cards, SEED, &g);
 
- 	printf("village PRE: p %d HC %d Dec %d DiC %d \n",p, pre.handCount[p],pre.deckCount[p],pre.discardCount[p]);
- 	r=villageRef(p,post,0); 	//play village card
- 	printf("village POST: p %d HC %d Dec %d DiC %d \n",p, post->handCount[p],post->deckCount[p],post->discardCount[p]);
+			deckSize = rand() % (MAX_DECK + 1);
+			handSize = rand() % (deckSize + 1);
 
-	if(post->handCount[p]==pre.handCount[p]+drawNum)
-	{
-		printf("handCount: pass\n");
-	}
-	else
-	{
-		printf("handCount: FAIL\n");
-	}
-	if(post->deckCount[p]+post->discardCount[p]==pre.deckCount[p]+pre.discardCount[p]-drawNum)
-	{
-		printf("deckCount+discardCount: pass\n");
-	}
-	else
-	{
-		printf("deckCount+discardCount: FAIL\n");
-	}
-	if(post->numActions==pre.numActions+actionNum)
-	{
-		printf("action: pass\n");
-	}
-	else
-	{
-		printf("action: FAIL\n");
-	}
+			g.deckCount[0] = deckSize - handSize;
+			g.handCount[0] = handSize;
+			g.numActions = rand() % 10;
+			handPos = g.hand[currentPlayer][g.handCount[currentPlayer]-1];
 
- 	assert(r==0);
+			//Record hand card before calling card effect
+			previousHand = g.handCount[0];
+			previousAction = g.numActions;
+			printf("village PRE: p %d HC %d Action %d \n",currentPlayer, previousHand, previousAction);
+		
+			cardEffect(village, choice1, choice2, choice3, &g, handPos, &bonus);
 
- }
+			//Record hand card after calling card effect
+			afterHand = g.handCount[0];
+			afterAction = g.numActions;
+			printf("village POST: p %d HC %d Action %d \n",currentPlayer, afterHand, afterAction);
+
+			allPassFlag = 1;
+
+			if(afterHand==previousHand)
+			{
+			printf("handCount: pass\n");
+			}
+			else
+			{
+			printf("handCount: FAIL\n");
+			}
+
+			if(afterAction==previousAction+2)
+			{
+			printf("action: pass\n");
+			}
+			else
+			{
+			printf("action: FAIL\n");
+			}
+
+			if (allPassFlag == 1) {
+			testingPass++;
+			}
+
+   }
+
+   return 0;
+
+}
+
+
