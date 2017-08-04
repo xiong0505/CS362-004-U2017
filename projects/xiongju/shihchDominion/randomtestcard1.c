@@ -1,73 +1,82 @@
-/* -----------------------------------------------------------------------
- * Demonstration of how to write card tests for dominion-base
- * Include the following lines in your makefile:
- *
- * testendTurn: randomtestcard1.c dominion.o rngs.o
- *      gcc -o randomtestcard1 -g  randomtestcard1.c dominion.o rngs.o $(CFLAGS)
- * -----------------------------------------------------------------------
- */
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <assert.h>
 #include "dominion.h"
 #include "dominion_helpers.h"
-#include <string.h>
-#include <stdio.h>
-#include <assert.h>
 #include "rngs.h"
-#include <time.h>
-#include <stdlib.h>
 
- int main(){
-	int i, n, r, p, deckCount, discardCount, handCount;
-    int k[10] = {adventurer, council_room, feast, gardens, mine, remodel, smithy, village, baron, great_hall};
-	struct gameState G;
-	printf("Testing smithy.\n");
+#define NUMTEST 10000
+#define SEED 100
+#define NUMPLAYERS 2
 
-	SelectStream(2);
-	PutSeed(3);
+int main () {
+	struct gameState g;
 
-	for(n=0;n<200000;n++){
-		printf("round: %d\n",n);
-		for(i=0;i<sizeof(struct gameState);i++){
-			((char*)&G)[i]=floor(Random()*256);
-		}
-		p=floor(Random()*2);
-		G.deckCount[p]=floor(Random()*MAX_DECK);
-		G.discardCount[p]=floor(Random()*MAX_DECK);
-		G.handCount[p]=floor(Random()*MAX_HAND)+1;     //at least have one card on hand to play
-		checkSmithyCard(p,&G);
-	}
+	int currentPlayer = 0;
+	int errorInDeck = 0;
+	int errorInHand = 0; 
+	int errorInDiscard = 0;
+	int deckSize, handSize, previousDeck, afterDeck, previousHand, afterHand, previousDiscard, afterDiscard;
+	int i;
+	int choice1 = 0, choice2 = 0, choice3 = 0, handPos = 0, bonus = 0;
+	int cards[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
+	int testingPass = 0;
+	int allPassFlag = 0;
 
-	printf("ALL TESTS OK\n");
-	exit(0);
- }
+	printf("Testing Smithy\n");
 
- int checkSmithyCard(int p,struct gameState *post){
- 	int r;
- 	int drawNum=3;
- 	struct gameState pre;
- 	memcpy(&pre,post,sizeof(struct gameState));
+	srand(time(NULL));
 
- 	printf("smithy PRE: p %d HC %d Dec %d DiC %d \n",p, pre.handCount[p],pre.deckCount[p],pre.discardCount[p]);
- 	r=smithyRef(p,post,0); 	//play smithy card
- 	printf("smithy POST: p %d HC %d Dec %d DiC %d \n",p, post->handCount[p],post->deckCount[p],post->discardCount[p]);
+	for(i = 0; i < NUMTEST; i++) {
+		initializeGame(NUMPLAYERS, cards, SEED, &g);
+		deckSize = rand() % (MAX_DECK + 1);
+		handSize = rand() % (deckSize + 1);
+		g.deckCount[0] = deckSize - handSize;
+		g.handCount[0] = handSize;
+		handPos = g.hand[currentPlayer][g.handCount[currentPlayer]-1];
 
-	if(post->handCount[p]==pre.handCount[p]+drawNum-1)
-	{
-		printf("handCount: pass\n");
-	}
-	else
-	{
-		printf("handCount: FAIL\n");
-	}
-	if(post->deckCount[p]+post->discardCount[p]==pre.deckCount[p]+pre.discardCount[p]-drawNum+1)
-	{
-		printf("deckCount+discardCount: pass\n");
-	}
-	else
-	{
-		printf("deckCount+discardCount: FAIL\n");
-	}
+		//Record deck, hand and discard before calling card effect
+		previousDeck = g.deckCount[0];
+		previousHand = g.handCount[0];
+		previousDiscard = g.playedCardCount;
 
- 	assert(r==0);
+		//Use smithy
+		cardEffect(smithy, choice1, choice2, choice3, &g, handPos, &bonus);
 
- }
+		//Note the state after playing the card
+      	afterDeck = g.deckCount[0];
+      	afterHand = g.handCount[0];
+      	afterDiscard = g.playedCardCount;
+
+      	allPassFlag = 1;
+
+      	//Testing 1: Deck decrease by 3
+      	if(afterDeck != (previousDeck - 3)){
+      		errorInDeck++;
+      		allPassFlag = 0;
+      	}
+      	
+      	//Testing 2: Hand increase by 2
+      	if(afterHand != (previousHand + 2)){
+      		errorInHand++;
+      		allPassFlag=0;
+      	}
+
+      	//Testing 3: Discard increase by 1
+      	if(afterDiscard != (previousDiscard + 1)){
+      		errorInDiscard++;
+      		allPassFlag = 0;
+      	}
+
+      	if (allPassFlag == 1)
+      		testingPass++;
+   }
+	
+	printf("-----Summary-----\nTotal %d random runs\nPass: %d\nFail: %d\n", NUMTEST, testingPass, (NUMTEST - testingPass));
+	printf("Testing1 - Deck not decrease by 3: %d\n", errorInDeck);
+	printf("Testing2 - Hand not increase by 2: %d\n", errorInHand);
+	printf("Testing3 - Discard inot ncrease by 1: %d\n", errorInDiscard);
+	return 0;
+}
