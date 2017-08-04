@@ -1288,17 +1288,14 @@ int smithyRef(int currentPlayer,struct gameState *state,int handPos){
 }
 
   //discard card from hand
-  //bug do not discard card from hand
-  //discardCard(handPos, currentPlayer, state, 0);
+  discardCard(handPos, currentPlayer, state, 0);
   return 0;
 }
 
 //adventurerRef()
 int adventurerRef(int drawntreasure,struct gameState *state,int currentPlayer,int cardDrawn,int temphand[MAX_HAND],int z){
- //while(drawntreasure<2){
- //bug: reveal cards from deck until reveal 1 treasure card
-  while(drawntreasure<1)
-  {
+ while(drawntreasure<2){
+
     if (state->deckCount[currentPlayer] <1){//if the deck is empty we need to shuffle discard and add to deck
     shuffle(currentPlayer, state);
     }
@@ -1332,9 +1329,8 @@ int villageRef(int currentPlayer,struct gameState *state,int handPos)
     drawCard(currentPlayer, state);
 
     //+2 Actions
-    //bug: +1 Actions
-    //state->numActions = state->numActions + 2;
-    state->numActions = state->numActions + 1;
+    state->numActions = state->numActions + 2;
+
 
     //discard played card from hand
     //discardCard(handPos, currentPlayer, state, 0);
@@ -1381,9 +1377,7 @@ return 0;
 //embargoRef()
 int embargoRef(struct gameState *state,int choice1,int handPos,int currentPlayer){
   //+2 Coins
-  //bug: +1 Coins
-  //state->coins = state->coins + 2;
-  state->coins = state->coins + 1;
+  state->coins = state->coins + 2;
 
   //see if selected pile is in play
   if ( state->supplyCount[choice1] == -1 )
