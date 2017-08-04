@@ -941,7 +941,10 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       return 0;
 		
     case smithy:
+      {
       Smithy(state, handPos);
+      break;
+      }
       /*
       //+3 Cards
       for (i = 0; i < 3; i++)
