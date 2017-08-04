@@ -1,94 +1,132 @@
-/* -----------------------------------------------------------------------
- * Demonstration of how to write card tests for dominion-base
- * Include the following lines in your makefile:
- *
- * testendTurn: randomtestadventurer.c dominion.o rngs.o
- *      gcc -o randomtestadventurer -g  randomtestadventurer.c dominion.o rngs.o $(CFLAGS)
- * -----------------------------------------------------------------------
- */
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <assert.h>
 #include "dominion.h"
 #include "dominion_helpers.h"
-#include <string.h>
-#include <stdio.h>
-#include <assert.h>
 #include "rngs.h"
-#include <time.h>
-#include <stdlib.h>
 
- int main(){
-	int i, n, r, p, deckCount, discardCount, handCount;
-    int k[10] = {adventurer, council_room, feast, gardens, mine, remodel, smithy, village, baron, great_hall};
-	struct gameState G;
-	printf("Testing adventurer.\n");
+#define NUMTEST 10000
+#define SEED 100
+#define NUMPLAYERS 2
 
-	SelectStream(2);
-	PutSeed(3);
+int main () {
+	struct gameState g;
+	int errorTreasureCardsHand = 0;
+	int errorTreasureCardsDiscard = 0;
+	int errorCardsDeckAndDiscard = 0;
+	int currentPlayer = 0;
+	int deckSize, handSize, randCard, randomCardIdx;
+	int discardCopper, discardSilver, discardGold;
+	int previousTreasure = 0, afterTreasure = 0;
+	int i, j, k, m;
+	int choice1 = 0, choice2 = 0, choice3 = 0, handPos = 0, bonus = 0;
+	int cards[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
+	int testingPass = 0;
+	int allPassFlag = 0;
+	int newNumCards, oldNumCards;
 
-	for(n=0;n<200000;n++){
-		printf("round: %d\n",n);
-		for(i=0;i<sizeof(struct gameState);i++){
-			((char*)&G)[i]=floor(Random()*256);
-		}
-		p=floor(Random()*2);
-		G.deckCount[p]=floor(Random()*MAX_DECK);
-		G.discardCount[p]=floor(Random()*MAX_DECK);
-		G.handCount[p]=floor(Random()*MAX_HAND)+1;     
+	printf("Testing Adventurer\n");
 
-		for(i=0;i<G.handCount[p];i++)  	 
-		{
-			G.hand[p][i]=adventurer;
-		}
+	srand(time(NULL));
 	
-		for(i=0;i<G.deckCount[p];i++)
-		{
-			G.deck[p][i]=copper;
+	for(i = 0; i < NUMTEST; i++) {
+		
+		//init the game
+		initializeGame(NUMPLAYERS, cards, SEED, &g);
+		
+		//reset counter
+		previousTreasure = 0;
+		afterTreasure = 0;
+		
+		deckSize = rand() % (MAX_DECK + 1);
+		handSize = rand() % (deckSize + 1);
+		g.deckCount[0] = deckSize - handSize;
+		g.handCount[0] = handSize;
+		
+		for(j = 0; j < NUMPLAYERS; j++){			
+			for(k = 0; k < g.deckCount[j]; k++){
+				randCard = rand() % 51;
+				
+				if (randCard == 1) g.deck[j][k] = copper;
+				else if(randCard == 2) g.deck[j][k] = silver;
+				else if(randCard == 3) g.deck[j][k] = gold;
+				else{
+					randomCardIdx = rand() % 10;
+					g.deck[j][k] = cards[randomCardIdx];}
+			}
 		}
 
-		for(i=0;i<G.discardCount[p];i++)			
-		{
-			G.discard[p][i]=copper;
+		//reset counter
+		newNumCards=0; 
+		oldNumCards=0;
+		
+		//Record deck and discard before calling card effect
+		for(m = 0; m < g.deckCount[0]; m++)
+			oldNumCards++;
+
+		for (m = 0; m< g.discardCount[0]; m++)
+			oldNumCards++;
+
+		//Record treasure cards before calling card effect
+		for(j = 0; j < g.handCount[currentPlayer]; j++)
+			if(g.hand[currentPlayer][j] == copper || g.hand[currentPlayer][j] == silver || g.hand[currentPlayer][j] == gold) previousTreasure++;
+
+		//Adventurer used
+		cardEffect(adventurer, choice1, choice2, choice3, &g, handPos, &bonus);
+
+		//Record treasure cards after calling card effect
+		for(j = 0; j < g.handCount[currentPlayer]; j++) 
+			if (g.hand[currentPlayer][j] == copper || g.hand[currentPlayer][j] == silver || g.hand[currentPlayer][j] == gold) afterTreasure++;
+
+		//Record deck and discard after calling card effect
+		for(m = 0; m < g.deckCount[0]; m++)
+			newNumCards++;
+
+		for (m = 0; m< g.discardCount[0]; m++)
+			newNumCards++;
+
+		//reset counter
+		discardCopper = 0;
+		discardSilver = 0;
+		discardGold = 0;
+
+		//Check if treasure cards being discarded
+		for(j = 0; j < g.discardCount[currentPlayer]; j++){
+			if (g.discard[currentPlayer][j] == copper) discardCopper++;
+			else if (g.discard[currentPlayer][j] == silver) discardSilver++;
+			else if (g.discard[currentPlayer][j] == gold) discardGold++;
 		}
 
+		//boolean flag: true if pass all testings
+		allPassFlag = 1;
+		
+		//Testing 1: Treasure cards increase by 2
+		if(afterTreasure != (previousTreasure + 2)){
+			allPassFlag = 0;
+			errorTreasureCardsHand++;
+		}
+		
+		//Testing 2: No treasure cards being discard
+		if(discardGold != 0 || discardSilver != 0 || discardCopper != 0){
+			allPassFlag = 0;
+			errorTreasureCardsDiscard++;
+		}
 
-		checkAdventurerCard(p,&G);
-	}
+		//Testing 3: Deck and discard decrease by 2
+		if(newNumCards - oldNumCards == 2){
+			allPassFlag = 0;
+			errorCardsDeckAndDiscard++;
+		}
+		
+		if(allPassFlag) testingPass++;
 
-	printf("ALL TESTS OK\n");
-	exit(0);
- }
-
- int checkAdventurerCard(int p,struct gameState *post){
- 	int temphand[MAX_HAND];// moved above the if statement
-  	int drawntreasure=0;
-    int cardDrawn;
-    int z = 0;// this is the counter for the temp hand
- 	int r;
- 	int drawNum=2;
- 	struct gameState pre;
- 	memcpy(&pre,post,sizeof(struct gameState));
-
- 	printf("village PRE: p %d HC %d Dec %d DiC %d \n",p, pre.handCount[p],pre.deckCount[p],pre.discardCount[p]);
- 	r=adventurerRef(drawntreasure,post,p,cardDrawn,temphand,z); 	//play village card
- 	printf("village POST: p %d HC %d Dec %d DiC %d \n",p, post->handCount[p],post->deckCount[p],post->discardCount[p]);
-
-	if(post->handCount[p]==pre.handCount[p]+drawNum)
-	{
-		printf("handCount: pass\n");
-	}
-	else
-	{
-		printf("handCount: FAIL\n");
-	}
-	if(post->deckCount[p]+post->discardCount[p]==pre.deckCount[p]+pre.discardCount[p]-drawNum)
-	{
-		printf("deckCount+discardCount: pass\n");
-	}
-	else
-	{
-		printf("deckCount+discardCount: FAIL\n");
-	}
-
- 	assert(r==0);
-
- }
+   }
+	
+	printf("-----Summary-----\nTotal %d random runs\nPass: %d\nFail %d\n", NUMTEST, testingPass, (NUMTEST-testingPass));
+	printf("Testing1 - Treasure cards not increase by 2: %d\n", errorTreasureCardsHand);
+	printf("Testing2 - Treasure card in discard: %d\n", errorTreasureCardsDiscard);
+	printf("Testing3 - Deck and discard decrease by 2: %d\n", errorCardsDeckAndDiscard);
+	return 0;
+}

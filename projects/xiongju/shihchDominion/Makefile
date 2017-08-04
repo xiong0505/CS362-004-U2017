@@ -108,7 +108,7 @@ randomtestadventurer:randomtestadventurer dominion.o rngs.o
 	randomtestadventurer >> unittestresults.out
 	gcov -b dominion.c >> unittestresults.out
 
-all: randomtestcard2
+all: unittest1 unittest2 unittest3 unittest4 cardtest1 cardtest2 cardtest3 cardtest4 randomtestcard1 randomtestcard2 randomtestadventurer
 
 clean:
 	rm -f *.o *.gcov *.gcda *.gcno *.so *.out *.exe unittest1 unittest2 unittest3 unittest4 cardtest1 cardtest2 cardtest3 cardtest4 randomtestcard1 randomtestcard2 randomtestadventurer
