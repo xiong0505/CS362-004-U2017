@@ -1,0 +1,73 @@
+Bug-Reports
+
+Bug#1: smithy()
+
+The first bug would be the smithy() function. Please see below for test result:
+
+cardtest1
+TESTING smithy():
+Before smithy: player=0, handCount=5, deckCout=5, discardCount=10.
+After smithy: player=0, handCount=8, deckCout=1, discardCount=10.
+handCount: FAIL
+deckCount+discardCount: FAIL
+Before smithy: player=0, handCount=5, deckCout=3, discardCount=10.
+After smithy: player=0, handCount=8, deckCout=9, discardCount=0.
+handCount: FAIL
+deckCount+discardCount: FAIL
+Before smithy: player=0, handCount=5, deckCout=2, discardCount=10.
+After smithy: player=0, handCount=8, deckCout=8, discardCount=0.
+handCount: FAIL
+deckCount+discardCount: FAIL
+Before smithy: player=0, handCount=5, deckCout=1, discardCount=10.
+After smithy: player=0, handCount=8, deckCout=7, discardCount=0.
+handCount: FAIL
+deckCount+discardCount: FAIL
+File 'dominion.c'
+Lines executed:23.45% of 563
+Creating 'dominion.c.gcov'
+
+
+According to the result, the handCount increased by 3 cards. 
+However the desired result would be draw 3 cards and discard the played card smithy, resulting in 2 cards increase.
+So the symptom would be the hand count of the player after playing smithy is wrong.
+And the second clue would be that for all the different scenario, the handCount all increased by 3. 
+So it is very possible that the bug is that the player drew 4 cards instead of 3. 
+
+
+
+
+Bug#2: adventurer()
+
+The second bug would be inside of adventurer() function. Please see below for test result:
+
+cardtest2
+TESTING adventurer():
+Before adventurer: player=0, handCount=5, deckCout=5, discardCount=10.
+After adeventurer: player=0, handCount=7, deckCout=3, discardCount=10.
+handCount: pass
+deckCount+discardCount: pass
+Before adventurer: player=0, handCount=5, deckCout=5, discardCount=10.
+After adeventurer: player=0, handCount=7, deckCout=2, discardCount=10.
+handCount: pass
+deckCount+discardCount: FAIL
+File 'dominion.c'
+Lines executed:26.29% of 563
+Creating 'dominion.c.gcov'
+ 
+My tests have 2 scenario:  the first one would be that the top 2 of deck count are treasury cards; 
+the second one would be that the top card is non-treasury card and the next 2 care treasury cards. 
+According the test result, the handCount pass in both scenario, however the deckCount+discardCount fails in the second scenario. 
+If keep digging into the test, it is not hard to find that the deckCount pile has the right results after playing adventurer(). 
+So the bug narrows down to discardCont. 
+As it shows, the discardCount in scenario2 should have 11 cards, but the test only shows 10 cards. 
+So the bug has something to do with discard card. 
+And when referring to the original dominion codes, it is relative easy to figure out that the bug is the index inside of temphand[] are not increasing each round.
+
+
+
+
+
+
+
+
+
